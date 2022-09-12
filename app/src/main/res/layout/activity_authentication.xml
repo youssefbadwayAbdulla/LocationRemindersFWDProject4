@@ -3,6 +3,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <data>
+        <variable
+            name="activity"
+            type="com.udacity.project4.authentication.AuthenticationActivity" />
+    </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -45,6 +50,7 @@
             android:textColor="@color/white"
             android:textAllCaps="false"
             android:textSize="@dimen/_16ssp"
+            android:onClick="@{()->activity.signInFlow()}"
             android:layout_margin="@dimen/_10sdp"
             android:id="@+id/btn_Login"
             app:cornerRadius="@dimen/_15sdp"

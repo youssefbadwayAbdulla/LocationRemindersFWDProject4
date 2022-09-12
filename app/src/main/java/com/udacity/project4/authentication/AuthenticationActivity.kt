@@ -28,10 +28,9 @@ class AuthenticationActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_authentication)
+        binding.activity = this
 
-        binding.btnLogin.setOnClickListener {
-            signInFlow()
-        }
+
         viewModelAuthentication.authenticationState.observe(this, Observer { authenticationState ->
             when (authenticationState) {
                 LoginViewModel.AuthenticationState.AUTHENTICATED -> {
@@ -46,7 +45,7 @@ class AuthenticationActivity : AppCompatActivity() {
         })
 
     }
-    private fun signInFlow() {
+    fun signInFlow() {
         //Sign in options
         val providers = arrayListOf(
             AuthUI.IdpConfig.EmailBuilder().build(), AuthUI.IdpConfig.GoogleBuilder().build()
