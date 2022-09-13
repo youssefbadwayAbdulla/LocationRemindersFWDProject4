@@ -84,7 +84,7 @@ class SaveReminderFragment : BaseFragment() {
             val longitude = _viewModel.longitude.value
             reminderDataItem = ReminderDataItem(title, description, location, latitude, longitude)
             if (_viewModel.validateEnteredData(reminderDataItem)) {
-                locationSettingsAndStartGeofence(true,reminderDataItem)
+                locationSettingsAndStartGeofence(true, reminderDataItem)
             }
             requestPermissionsForForegroundAndBackground()
         }
@@ -93,8 +93,11 @@ class SaveReminderFragment : BaseFragment() {
 
     @TargetApi(29)
     private fun requestPermissionsForForegroundAndBackground() {
-        if (locationPermissionApprovedForBackgroundAndForeground())
+        if (locationPermissionApprovedForBackgroundAndForeground()) {
+            locationSettingsAndStartGeofence(true, reminderDataItem)
             return
+        }
+
         var permissionsArrayLocation = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
         val resultCode = when {
             runningQOrLater -> {
@@ -161,11 +164,14 @@ class SaveReminderFragment : BaseFragment() {
                     })
                 }.show()
         } else {
-            locationSettingsAndStartGeofence(true,reminderDataItem)
+            locationSettingsAndStartGeofence(true, reminderDataItem)
         }
     }
 
-    private fun locationSettingsAndStartGeofence(resolve: Boolean = true,reminderData: ReminderDataItem) {
+    private fun locationSettingsAndStartGeofence(
+        resolve: Boolean = true,
+        reminderData: ReminderDataItem
+    ) {
         val locationRequest = LocationRequest.create().apply {
             priority = LocationRequest.PRIORITY_LOW_POWER
         }
@@ -225,12 +231,12 @@ class SaveReminderFragment : BaseFragment() {
                 return
             }
             geofencingClientSelected.addGeofences(geofencingRequestLocation, pendingIntent)
-                .addOnSuccessListener {success->
+                .addOnSuccessListener { success ->
                     _viewModel.validateAndSaveReminder(reminderDataItem)
                 }
-                .addOnFailureListener { error->
+                .addOnFailureListener { error ->
                     if ((error.message != null)) {
-                        locationSettingsAndStartGeofence(true,reminderDataItem)
+                        locationSettingsAndStartGeofence(true, reminderDataItem)
                     }
                 }
         }

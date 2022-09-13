@@ -7,6 +7,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.android.architecture.blueprints.todoapp.getOrAwaitValue
 import com.udacity.project4.locationreminders.data.FakeDataSource
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
+import com.udacity.project4.locationreminders.reminderslist.RemindersListViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
 import org.hamcrest.CoreMatchers
@@ -140,7 +141,21 @@ class SaveReminderViewModelTest {
         assertThat(saveRemindersViewModelTest.showLoading.getOrAwaitValue(), `is`(false))
 
 
+    }
 
+    @Test
+    fun shouldReturnError() {
+        fakeLocalDataSourceForTesting = FakeDataSource(null)
+        saveRemindersViewModelTest = SaveReminderViewModel(
+            ApplicationProvider.getApplicationContext(),
+            fakeLocalDataSourceForTesting
+        )
+        fakeLocalDataSourceForTesting.setReturnError(true)
+        saveRemindersViewModelTest.saveReminder(reminderDTO)
+        assertThat(
+            saveRemindersViewModelTest.showSnackBar.getOrAwaitValue(),
+            Is.`is`("Location reminder information not Saved")
+        )
     }
 
 

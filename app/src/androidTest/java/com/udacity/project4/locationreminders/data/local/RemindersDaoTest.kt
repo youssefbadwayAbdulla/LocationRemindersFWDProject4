@@ -15,6 +15,7 @@ import kotlinx.coroutines.test.runBlockingTest
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.After
+import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -92,6 +93,18 @@ class RemindersDaoTest {
         assertThat(getReminderListTest.isEmpty(), `is`(true))
     }
 
+
+
+    @Test
+    fun returnNoReminders_dataError()= runBlockingTest{
+        val reminder = ReminderDTO("titleError", "descriptionError", "locationError", 37.819927, 39.8145927)
+        remindersDatabaseTest.reminderDao().saveReminder(reminder)
+        val randomId="55415254324fs711"
+        val loadReminderLocations = remindersDatabaseTest.reminderDao().getReminderById(randomId)
+
+        assertNull(loadReminderLocations)
+
+    }
     @After
     fun closeRemindersDatabase() {
         remindersDatabaseTest.close()

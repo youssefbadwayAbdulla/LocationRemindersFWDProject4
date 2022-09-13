@@ -14,7 +14,7 @@ import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.MediumTest
 import com.udacity.project4.R
-import com.udacity.project4.locationreminders.data.FakeDataSource
+import com.udacity.project4.locationreminders.FakeDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
@@ -61,37 +61,40 @@ class ReminderListFragmentTest {
     }
 
 
-//    TODO: test the navigation of the fragments.
+    //    TODO: test the navigation of the fragments.
     @Test
-    fun addNavigationReminders()= runBlockingTest{
-    val fragment = launchFragmentInContainer<ReminderListFragment>(Bundle())
-    val navController = mock(NavController::class.java)
-    fragment.onFragment {
-        Navigation.setViewNavController(it.view!!, navController)
-    }
+    fun addNavigationReminders() = runBlockingTest {
+        val fragment = launchFragmentInContainer<ReminderListFragment>(Bundle(), R.style.AppTheme)
+        val navController = mock(NavController::class.java)
+        fragment.onFragment {
+            Navigation.setViewNavController(it.view!!, navController)
+        }
 
-    onView(withId(R.id.addReminderFAB)).perform(click())
+        onView(withId(R.id.addReminderFAB)).perform(click())
 
-    verify(navController).navigate(ReminderListFragmentDirections.toSaveReminder())
+        verify(navController).navigate(ReminderListFragmentDirections.toSaveReminder())
     }
 
 //    TODO: test the displayed data on the UI.
 
     @Test
     fun displayData_and_DisplayUITest() = runBlockingTest {
-        val reminderLocationTest = ReminderDTO("title", "description", "dhaka", 37.819927, 39.852927)
+        val reminderLocationTest =
+            ReminderDTO("title", "description", "dhaka", 37.819927, 39.852927)
         fakeLocalDataSourceForTesting.saveReminder(reminderLocationTest)
-        launchFragmentInContainer<ReminderListFragment>(Bundle.EMPTY)
+        launchFragmentInContainer<ReminderListFragment>(Bundle.EMPTY, R.style.AppTheme)
         onView(withId(R.id.noDataTextView)).check(matches(CoreMatchers.not(isDisplayed())))
         onView(withText(reminderLocationTest.title)).check(matches(isDisplayed()))
         onView(withText(reminderLocationTest.description)).check(matches(isDisplayed()))
         onView(withText(reminderLocationTest.location)).check(matches(isDisplayed()))
 
     }
-//    TODO: add testing for the error messages.
+
+    //    TODO: add testing for the error messages.
     @Test
     fun errorShowSnackAndBackShown() = runBlockingTest {
         fakeLocalDataSourceForTesting.deleteAllReminders()
+        launchFragmentInContainer<ReminderListFragment>(Bundle.EMPTY, R.style.AppTheme)
         onView(withText("No location found"))
             .check(matches(isDisplayed()))
     }

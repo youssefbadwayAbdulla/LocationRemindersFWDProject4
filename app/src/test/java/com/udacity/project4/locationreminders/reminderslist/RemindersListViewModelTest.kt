@@ -69,9 +69,20 @@ class RemindersListViewModelTest {
     }
 
     @Test
-    fun getLoadReminders_CheckOfRemindersTasksLoading() = runBlockingTest {
+    fun getLoadReminders_CheckOfRemindersTasksLoading(){
         loadRemindersViewModelTest.loadReminders()
         assertThat(loadRemindersViewModelTest.showLoading.getOrAwaitValue(), Is.`is`(false))
+    }
+
+    @Test
+    fun shouldReturnError(){
+        fakeLocalDataSourceForTesting = FakeDataSource(null)
+        loadRemindersViewModelTest = RemindersListViewModel(ApplicationProvider.getApplicationContext(), fakeLocalDataSourceForTesting)
+        fakeLocalDataSourceForTesting.setReturnError(true)
+        loadRemindersViewModelTest.loadReminders()
+        assertThat(loadRemindersViewModelTest.showSnackBar.getOrAwaitValue(),
+            Is.`is`("Location reminder information not found")
+        )
     }
 
     @After

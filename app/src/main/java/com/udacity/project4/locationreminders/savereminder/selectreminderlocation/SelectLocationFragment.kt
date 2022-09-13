@@ -2,11 +2,17 @@ package com.udacity.project4.locationreminders.savereminder.selectreminderlocati
 
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Resources
 import android.location.Address
 import android.location.Geocoder
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
+import android.util.Log
 import android.view.*
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
@@ -15,7 +21,10 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
+import com.google.android.material.snackbar.Snackbar
+import com.udacity.project4.BuildConfig
 import com.udacity.project4.R
+import com.udacity.project4.authentication.AuthenticationActivity
 import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentSelectLocationBinding
@@ -155,10 +164,10 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
                 MapStyleOptions.loadRawResourceStyle(requireContext(), R.raw.map_style)
             )
             if (!success) {
-
+                Log.e(AuthenticationActivity.TAG, "Style failed.")
             }
-        } catch (e: Exception) {
-
+        } catch (e: Resources.NotFoundException) {
+            Log.e(AuthenticationActivity.TAG, " style. Error: ", e)
         }
     }
 
@@ -188,6 +197,17 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         if (requestCode == REQUEST_LOCATION_PERMISSION) {
             if (grantResults.size > 0 && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
                 enableMyLocation()
+            }else {
+                Snackbar.make(
+                    binding.root,
+                    R.string.permission_denied_explanation, Snackbar.LENGTH_INDEFINITE
+                ).setAction(R.string.settings) {
+                        startActivity(Intent().apply {
+                            action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                            data = Uri.fromParts("package", BuildConfig.APPLICATION_ID, null)
+                            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        })
+                    }.show()
             }
         }
 
@@ -196,13 +216,17 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
     private fun onLocationSelected() {
         binding.btnSave.setOnClickListener {
             // TODO: When the user confirms on the selected location
-            _viewModel.latitude.value = latitude
-            _viewModel.longitude.value = longitude
-            //send back the selected location details to the view model
-            _viewModel.reminderSelectedLocationStr.value = poiName
-            // and navigate back to the previous fragment to save the reminder and add the geofence
-            _viewModel.navigationCommand.postValue(NavigationCommand.Back)
-
+            if (isLocationAddressSelected) {
+                _viewModel.latitude.value = latitude
+                _viewModel.longitude.value = longitude
+                //send back the selected location details to the view model
+                _viewModel.reminderSelectedLocationStr.value = poiName
+                // and navigate back to the previous fragment to save the reminder and add the geofence
+                _viewModel.navigationCommand.postValue(NavigationCommand.Back)
+            }else{
+                Toast.makeText(context, getString(R.string.select_location), Toast.LENGTH_LONG)
+                    .show()
+            }
         }
 
 
