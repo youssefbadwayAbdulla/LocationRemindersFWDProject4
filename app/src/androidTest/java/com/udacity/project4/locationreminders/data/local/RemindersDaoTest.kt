@@ -93,7 +93,9 @@ class RemindersDaoTest {
     }
 
     @After
-    fun closeRemindersDatabase() = remindersDatabaseTest.close()
+    fun closeRemindersDatabase() {
+        remindersDatabaseTest.close()
+    }
 
 
 }

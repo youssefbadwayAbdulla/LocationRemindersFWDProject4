@@ -79,7 +79,7 @@ class ReminderListFragmentTest {
 
     @Test
     fun displayData_and_DisplayUITest() = runBlockingTest {
-        val reminderLocationTest = ReminderDTO("title1", "description1", "dhaka1", 37.819927, 39.852927)
+        val reminderLocationTest = ReminderDTO("title", "description", "dhaka", 37.819927, 39.852927)
         fakeLocalDataSourceForTesting.saveReminder(reminderLocationTest)
         launchFragmentInContainer<ReminderListFragment>(Bundle.EMPTY)
         onView(withId(R.id.noDataTextView)).check(matches(CoreMatchers.not(isDisplayed())))
@@ -92,7 +92,7 @@ class ReminderListFragmentTest {
     @Test
     fun errorShowSnackAndBackShown() = runBlockingTest {
         fakeLocalDataSourceForTesting.deleteAllReminders()
-        onView(withText("No reminders location found"))
+        onView(withText("No location found"))
             .check(matches(isDisplayed()))
     }
 }

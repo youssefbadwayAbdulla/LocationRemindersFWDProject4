@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:310832074431:android:ff73b9e79510045dda800a",
+        "mobilesdk_app_id": "1:310832074431:android:af9939858a45107dda800a",
         "android_client_info": {
-          "package_name": "com.udacity.project5"
+          "package_name": "com.udacity.project4"
         }
       },
       "oauth_client": [
@@ -46,7 +46,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:310832074431:android:ff73b9e79510045dda800a",
         "android_client_info": {
-          "package_name": "com.udacity.project5"
+          "package_name": "com.udacity.project4"
         }
       },
       "oauth_client": [
@@ -54,7 +54,7 @@
           "client_id": "310832074431-hn5udpiocvaum7vtmkrm4jggcn62li6b.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.udacity.project5",
+            "package_name": "com.udacity.project4",
             "certificate_hash": "7942413d0f16a526246b99d228133b0db6ef46bb"
           }
         },

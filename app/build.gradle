@@ -10,7 +10,7 @@ android {
     buildToolsVersion "29.0.2"
 
     defaultConfig {
-        applicationId "com.udacity.project5"
+        applicationId "com.udacity.project4"
         minSdkVersion rootProject.minSdkVersion
         targetSdkVersion rootProject.targetSdkVersion
         versionCode 1
@@ -138,9 +138,9 @@ dependencies {
     //Maps & Geofencing
     implementation "com.google.android.gms:play-services-location:$playServicesVersion"
     implementation "com.google.android.gms:play-services-maps:$playServicesVersion"
-   // implementation 'com.firebaseui:firebase-ui-auth:5.0.0'
+  implementation 'com.firebaseui:firebase-ui-auth:5.0.0'
 
-   implementation 'com.firebaseui:firebase-ui-auth:8.0.1'
+  // implementation 'com.firebaseui:firebase-ui-auth:8.0.1'
 //
 //    // Required only if Facebook login support is required
 //    // Find the latest Facebook SDK releases here: https://github.com/facebook/facebook-android-sdk/blob/master/CHANGELOG.md

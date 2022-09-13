@@ -54,7 +54,7 @@ class RemindersActivityTest :
         //Get our real repository
         repository = get()
 
-        //clear the data to start fresh
+        //clear the data to start fresh`
         runBlocking {
             repository.deleteAllReminders()
         }
