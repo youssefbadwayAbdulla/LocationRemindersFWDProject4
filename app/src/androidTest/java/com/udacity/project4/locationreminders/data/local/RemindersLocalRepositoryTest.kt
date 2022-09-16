@@ -11,9 +11,11 @@ import com.udacity.project4.locationreminders.data.dto.Result
 
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.MatcherAssert.assertThat
+import org.intellij.lang.annotations.Identifier
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -47,7 +49,7 @@ class RemindersLocalRepositoryTest {
     }
 
     @Test
-    fun getAndSaveReminder() = runBlockingTest {
+    fun getAndSaveReminder() = runBlocking {
         val insertAndSaveReminders =
             ReminderDTO("title", "description", "location", 30.043457431, 31.2765762)
         remindersDatabaseTest.reminderDao().saveReminder(insertAndSaveReminders)
@@ -59,6 +61,8 @@ class RemindersLocalRepositoryTest {
         assertThat(saveResult.data.latitude, `is`(30.043457431))
         assertThat(saveResult.data.longitude, `is`(31.2765762))
     }
+
+
 
     @Test
     fun getAndDeleteReminder() = runBlockingTest {

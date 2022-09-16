@@ -373,5 +373,4 @@
     <orderEntry type="library" scope="TEST" name="Gradle: com.intuit.ssp:ssp-android:1.1.0@aar" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: com.intuit.sdp:sdp-android:1.1.0@aar" level="project" />
   </component>
-  <component name="TestModuleProperties" production-module="Project4.app.main" />
 </module>

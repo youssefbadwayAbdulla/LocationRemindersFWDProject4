@@ -94,7 +94,6 @@ class SaveReminderFragment : BaseFragment() {
     @TargetApi(29)
     private fun requestPermissionsForForegroundAndBackground() {
         if (locationPermissionApprovedForBackgroundAndForeground()) {
-            locationSettingsAndStartGeofence(true, reminderDataItem)
             return
         }
 
@@ -205,7 +204,16 @@ class SaveReminderFragment : BaseFragment() {
         }
     }
 
-    private fun addGeofenceForLocation() {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_TURN_DEVICE_LOCATION_ON) {
+            //  check the location setting again
+            locationSettingsAndStartGeofence(false,reminderDataItem)
+        }
+    }
+
+
+        private fun addGeofenceForLocation() {
         if (this::reminderDataItem.isInitialized) {
             val geofenceAddedLocation = Geofence.Builder()
                 .setRequestId(reminderDataItem.id)
@@ -241,6 +249,8 @@ class SaveReminderFragment : BaseFragment() {
                 }
         }
     }
+
+
 
     override fun onDestroy() {
         super.onDestroy()
