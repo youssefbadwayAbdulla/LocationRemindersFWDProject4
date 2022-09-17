@@ -1,28 +1,26 @@
 package com.udacity.project4.locationreminders.savereminder.selectreminderlocation
 
 
+import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.location.Address
 import android.location.Geocoder
-import android.net.Uri
+import android.location.Location
 import android.os.Bundle
-import android.provider.Settings
 import android.util.Log
 import android.view.*
-import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
-import com.google.android.material.snackbar.Snackbar
-import com.udacity.project4.BuildConfig
 import com.udacity.project4.R
 import com.udacity.project4.authentication.AuthenticationActivity
 import com.udacity.project4.base.BaseFragment
@@ -34,17 +32,27 @@ import org.koin.android.ext.android.inject
 import java.util.*
 
 class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
+
     private lateinit var map: GoogleMap
-    private val REQUEST_LOCATION_PERMISSION = 1
-    var mapPoi: PointOfInterest? = null
+    private var mapPoi: PointOfInterest? = null
     private var isLocationAddressSelected = false
     private var latitude: Double = 0.0
     private var longitude: Double = 0.0
     private var poiName: String? = null
+    private var markerLocation: Marker? = null
+
+    companion object {
+        private const val PERMISSION_CODE_LOCATION_REQUEST = 1
+    }
+
 
     //Use Koin to get the view model of the SaveReminder
     override val _viewModel: SaveReminderViewModel by inject()
     private lateinit var binding: FragmentSelectLocationBinding
+    private val fusedLocationClient by lazy {
+        LocationServices.getFusedLocationProviderClient(requireActivity())
+    }
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -68,6 +76,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 
     }
 
+
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
         val latitude = 30.0434574
@@ -88,6 +97,12 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         setMapStyle(map)
         enableMyLocation()
 
+        if (isPermissionGranted()) {
+            enableMyLocation()
+        } else {
+            requestLocationPermission()
+        }
+
     }
 
     private fun onMapLongClick(map: GoogleMap) {
@@ -105,13 +120,15 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
                 latLong.latitude,
                 latLong.longitude
             )
-            map.addMarker(
+            markerLocation = map.addMarker(
                 MarkerOptions()
                     .position(latLong)
                     .title(currentLocation)
                     .snippet(snippet)
                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
-            )?.showInfoWindow()
+            )
+            markerLocation?.showInfoWindow()
+            map.animateCamera(CameraUpdateFactory.newLatLng(latLong))
 
 
         }
@@ -142,7 +159,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
     private fun setPoiClick(map: GoogleMap) {
         map.setOnPoiClickListener { Poi ->
             map.clear()
-            map.moveCamera(CameraUpdateFactory.newLatLngZoom(Poi.latLng,15f))
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(Poi.latLng, 15f))
             val poiMarker = map.addMarker(
                 MarkerOptions().position(Poi.latLng)
                     .title(Poi.name)
@@ -150,9 +167,9 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
             poiMarker?.showInfoWindow()
             mapPoi = Poi
             isLocationAddressSelected = true
-            latitude=Poi.latLng.latitude
-            longitude=Poi.latLng.longitude
-            poiName=Poi.name
+            latitude = Poi.latLng.latitude
+            longitude = Poi.latLng.longitude
+            poiName = Poi.name
 
         }
 
@@ -171,68 +188,78 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         }
     }
 
-    private fun isPermissionGranted(): Boolean {
-        return ContextCompat.checkSelfPermission(
-            requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
-    }
-
-    @SuppressLint("MissingPermission")
-    private fun enableMyLocation() {
-        if (isPermissionGranted()) {
+    private fun requestLocationPermission() {
+        if (ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) ==
+            PackageManager.PERMISSION_GRANTED &&
+            ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) ==
+            PackageManager.PERMISSION_GRANTED
+        ) {
             map.isMyLocationEnabled = true
+
         } else {
-            ActivityCompat.requestPermissions(
-                requireActivity(),
-                arrayOf<String>(android.Manifest.permission.ACCESS_FINE_LOCATION),
-                REQUEST_LOCATION_PERMISSION
+            this.requestPermissions(
+                arrayOf<String>(Manifest.permission.ACCESS_FINE_LOCATION),
+                PERMISSION_CODE_LOCATION_REQUEST
             )
         }
     }
 
+    private fun isPermissionGranted(): Boolean {
+        return ContextCompat.checkSelfPermission(
+            requireActivity(),
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+
     override fun onRequestPermissionsResult(
-        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == REQUEST_LOCATION_PERMISSION) {
-            if (grantResults.size > 0 && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                enableMyLocation()
-            }
-            else {
-                Snackbar.make(requireView(),
-                    R.string.permission_denied_explanation, Snackbar.LENGTH_INDEFINITE
-                ).setAction(R.string.settings) {
-                        startActivity(Intent().apply {
-                            action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-                            data = Uri.fromParts("package", BuildConfig.APPLICATION_ID, null)
-                            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                        })
-                    }.show()
-            }
+        if (grantResults.isNotEmpty() && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+            enableMyLocation()
+        } else {
+            showRationaleAlertDialog()
         }
-
     }
 
     private fun onLocationSelected() {
         binding.btnSave.setOnClickListener {
-            // TODO: When the user confirms on the selected location
-            if (isLocationAddressSelected) {
-                _viewModel.latitude.value = latitude
-                _viewModel.longitude.value = longitude
-                //send back the selected location details to the view model
-                _viewModel.reminderSelectedLocationStr.value = poiName
-                // and navigate back to the previous fragment to save the reminder and add the geofence
-                _viewModel.navigationCommand.postValue(NavigationCommand.Back)
-            }else{
-                Toast.makeText(context, getString(R.string.select_location), Toast.LENGTH_LONG)
-                    .show()
+            markerLocation?.let { marker ->
+                _viewModel.latitude.value = marker.position.latitude
+                _viewModel.longitude.value = marker.position.longitude
+                _viewModel.reminderSelectedLocationStr.value = marker.title
+                _viewModel.navigationCommand.value = NavigationCommand.Back
             }
         }
 
 
-
     }
 
+    @SuppressLint("MissingPermission")
+    private fun enableMyLocation() {
+        map.isMyLocationEnabled = true
+        fusedLocationClient.lastLocation
+            .addOnSuccessListener { currentLocation: Location? ->
+                currentLocation?.let {
+                    val userLocation = LatLng(currentLocation.latitude, currentLocation.longitude)
+                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 15f))
+                    markerLocation = map.addMarker(
+                        MarkerOptions().position(userLocation)
+                            .title(getString(R.string.my_current_location))
+                    )
+                    markerLocation?.showInfoWindow()
+                }
+            }
+    }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.map_options, menu)
@@ -256,5 +283,24 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         return super.onOptionsItemSelected(item)
     }
 
+    private fun showRationaleAlertDialog() {
+        if (
+            ActivityCompat.shouldShowRequestPermissionRationale(
+                requireActivity(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            )
+        ) {
+            AlertDialog.Builder(requireActivity())
+                .setTitle(R.string.location_select_permission)
+                .setMessage(R.string.permission_denied_explanation)
+                .setPositiveButton("OK") { _, _ ->
+                    requestLocationPermission()
+                }
+                .create()
+                .show()
 
+        } else {
+            requestLocationPermission()
+        }
+    }
 }

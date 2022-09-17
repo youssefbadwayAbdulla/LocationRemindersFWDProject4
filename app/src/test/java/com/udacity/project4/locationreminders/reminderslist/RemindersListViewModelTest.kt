@@ -5,10 +5,10 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.android.architecture.blueprints.todoapp.getOrAwaitValue
+import com.udacity.project4.MainCoroutineRule
 import com.udacity.project4.locationreminders.data.FakeDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.runBlockingTest
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.core.Is
 import org.hamcrest.core.IsNot
@@ -26,6 +26,9 @@ import org.robolectric.annotation.Config
 class RemindersListViewModelTest {
     @get:Rule
     var instantExecutorRuleTest = InstantTaskExecutorRule()
+    @get:Rule
+    var mainCoroutineRuleTest = MainCoroutineRule()
+
     private lateinit var fakeLocalDataSourceForTesting: FakeDataSource
     private lateinit var loadRemindersViewModelTest: RemindersListViewModel
     private lateinit var remindersList: List<ReminderDTO>
@@ -70,7 +73,10 @@ class RemindersListViewModelTest {
 
     @Test
     fun getLoadReminders_CheckOfRemindersTasksLoading(){
+        mainCoroutineRuleTest.pauseDispatcher()
         loadRemindersViewModelTest.loadReminders()
+        assertThat(loadRemindersViewModelTest.showLoading.getOrAwaitValue(), Is.`is`(true))
+        mainCoroutineRuleTest.resumeDispatcher()
         assertThat(loadRemindersViewModelTest.showLoading.getOrAwaitValue(), Is.`is`(false))
     }
 

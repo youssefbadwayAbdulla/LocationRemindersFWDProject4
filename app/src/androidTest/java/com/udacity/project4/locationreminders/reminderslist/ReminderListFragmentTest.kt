@@ -15,7 +15,10 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.MediumTest
 import com.udacity.project4.R
 import com.udacity.project4.locationreminders.FakeDataSource
+import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
+import com.udacity.project4.util.DataBindingIdlingResource
+import com.udacity.project4.util.monitorFragment
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
 import org.hamcrest.CoreMatchers
@@ -37,14 +40,15 @@ import org.mockito.Mockito.verify
 class ReminderListFragmentTest {
     @get:Rule
     var instantExecutorRuleTest = InstantTaskExecutorRule()
-    private lateinit var fakeLocalDataSourceForTesting: FakeDataSource
+    private lateinit var fakeLocalDataSourceForTesting: ReminderDataSource
     private lateinit var loadRemindersViewModelTest: RemindersListViewModel
+    private val binding = DataBindingIdlingResource()
 
     @Before
     fun setupTest() {
         fakeLocalDataSourceForTesting = FakeDataSource()
         loadRemindersViewModelTest =
-            RemindersListViewModel(getApplicationContext(), fakeLocalDataSourceForTesting)
+            RemindersListViewModel(getApplicationContext(), fakeLocalDataSourceForTesting as ReminderDataSource)
         stopKoin()
         modules()
     }
@@ -92,10 +96,17 @@ class ReminderListFragmentTest {
 
     //    TODO: add testing for the error messages.
     @Test
-    fun errorShowSnackAndBackShown() = runBlockingTest {
-        fakeLocalDataSourceForTesting.deleteAllReminders()
-        launchFragmentInContainer<ReminderListFragment>(Bundle.EMPTY, R.style.AppTheme)
-        onView(withText("No location found"))
-            .check(matches(isDisplayed()))
+    fun errorShowSnackAndBackShown()  {
+        val fragmentScenario =
+            launchFragmentInContainer<ReminderListFragment>(Bundle.EMPTY, R.style.AppTheme)
+        binding.monitorFragment(fragmentScenario)
+        val controller = mock(NavController::class.java)
+
+        fragmentScenario.onFragment {
+            Navigation.setViewNavController(it.view!!, controller)
+        }
+
+        onView(withId(R.id.addReminderFAB)).perform(click())
+        verify(controller).navigate(ReminderListFragmentDirections.toSaveReminder())
     }
-}
+    }

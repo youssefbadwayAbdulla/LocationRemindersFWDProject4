@@ -65,15 +65,16 @@ class RemindersLocalRepositoryTest {
 
 
     @Test
-    fun getAndDeleteReminder() = runBlockingTest {
+    fun getAndDeleteReminder() = runBlocking {
         val insertAndSaveReminders =
             ReminderDTO("title", "description", "location", 30.043457431, 31.2765762)
         remindersDatabaseTest.reminderDao().saveReminder(insertAndSaveReminders)
         remindersDatabaseTest.reminderDao().deleteAllReminders()
 
-        val saveResult = remindersLocalRepository.getReminder(insertAndSaveReminders.id)
-        saveResult as Result.Error
-        assertThat(saveResult.message, `is`("ReminderLocation is not found!"))
+        val saveResult = remindersLocalRepository.getReminders()
+        assertThat(saveResult is Result.Success, `is`(true))
+        saveResult as Result.Success
+        assertThat(saveResult.data, `is`(emptyList()))
 
     }
 

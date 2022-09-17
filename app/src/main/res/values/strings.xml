@@ -54,5 +54,7 @@
     <!-- Facebook Application ID, prefixed by 'fb'. Enables Chrome Custom tabs. -->
     <string name="facebook_login_protocol_scheme" translatable="false">fbAPP_ID</string>
     <string name="login_screen">Login</string>
+    <string name="my_current_location">my_current_location</string>
+    <string name="location_select_permission" />
 
 </resources>

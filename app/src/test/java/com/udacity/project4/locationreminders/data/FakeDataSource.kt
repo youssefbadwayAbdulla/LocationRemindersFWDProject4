@@ -9,14 +9,17 @@ class FakeDataSource(private val listReminderDTO: MutableList<ReminderDTO>? = mu
     private var shouldReturnErrorTest = false
 
     fun setReturnError(shouldReturnError: Boolean) {
-        this.shouldReturnErrorTest = shouldReturnError
+        shouldReturnErrorTest = shouldReturnError
     }
+
     override suspend fun getReminders(): Result<List<ReminderDTO>> {
-        return if (listReminderDTO != null) {
-            return Result.Success(listReminderDTO)
-        } else {
-            Result.Error("No reminder Location Founded")
+        if (shouldReturnErrorTest) {
+            return Result.Error(
+                "Error  Can not get reminders"
+            )
         }
+        listReminderDTO?.let { return Result.Success(it) }
+        return Result.Error("Reminders not founded here")
     }
 
     override suspend fun saveReminder(reminder: ReminderDTO) {
