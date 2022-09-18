@@ -76,6 +76,13 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        binding.btnSave.setOnClickListener {
+            onLocationSelected()
+        }
+    }
+
 
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
@@ -232,14 +239,14 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
     }
 
     private fun onLocationSelected() {
-        binding.btnSave.setOnClickListener {
+
             markerLocation?.let { marker ->
                 _viewModel.latitude.value = marker.position.latitude
                 _viewModel.longitude.value = marker.position.longitude
                 _viewModel.reminderSelectedLocationStr.value = marker.title
                 _viewModel.navigationCommand.value = NavigationCommand.Back
             }
-        }
+
 
 
     }

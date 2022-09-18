@@ -87,7 +87,7 @@ class RemindersListViewModelTest {
         fakeLocalDataSourceForTesting.setReturnError(true)
         loadRemindersViewModelTest.loadReminders()
         assertThat(loadRemindersViewModelTest.showSnackBar.getOrAwaitValue(),
-            Is.`is`("Location reminder information not found")
+            Is.`is`("Error  Can not get reminders")
         )
     }
 
