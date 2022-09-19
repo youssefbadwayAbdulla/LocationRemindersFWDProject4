@@ -43,6 +43,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 
     companion object {
         private const val PERMISSION_CODE_LOCATION_REQUEST = 1
+        private const val REQUEST_LOCATION_PERMISSION=1
     }
 
 
@@ -210,7 +211,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
             map.isMyLocationEnabled = true
 
         } else {
-            this.requestPermissions(
+           requestPermissions(
                 arrayOf<String>(Manifest.permission.ACCESS_FINE_LOCATION),
                 PERMISSION_CODE_LOCATION_REQUEST
             )
@@ -253,19 +254,36 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 
     @SuppressLint("MissingPermission")
     private fun enableMyLocation() {
-        map.isMyLocationEnabled = true
-        fusedLocationClient.lastLocation
-            .addOnSuccessListener { currentLocation: Location? ->
-                currentLocation?.let {
-                    val userLocation = LatLng(currentLocation.latitude, currentLocation.longitude)
-                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 15f))
-                    markerLocation = map.addMarker(
-                        MarkerOptions().position(userLocation)
-                            .title(getString(R.string.my_current_location))
-                    )
-                    markerLocation?.showInfoWindow()
+        if (ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) === PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) === PackageManager.PERMISSION_GRANTED
+        ) {
+            map.isMyLocationEnabled = true
+            fusedLocationClient.lastLocation
+                .addOnSuccessListener { currentLocation: Location? ->
+                    currentLocation?.let {
+                        val userLocation = LatLng(currentLocation.latitude, currentLocation.longitude)
+                        map.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 15f))
+                        markerLocation = map.addMarker(
+                            MarkerOptions().position(userLocation)
+                                .title(getString(R.string.my_current_location))
+                        )
+                        markerLocation?.showInfoWindow()
+                    }
                 }
-            }
+        }
+
+        else{
+            requestPermissions(
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION),
+                REQUEST_LOCATION_PERMISSION)
+        }
+
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
