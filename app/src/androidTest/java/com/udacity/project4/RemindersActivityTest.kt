@@ -23,6 +23,7 @@ import com.udacity.project4.util.DataBindingIdlingResource
 import com.udacity.project4.util.monitorActivity
 import com.udacity.project4.utils.EspressoIdlingResource
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runBlockingTest
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.CoreMatchers.not
 import org.junit.After
@@ -120,21 +121,18 @@ class RemindersActivityTest :
 
     @Test
     fun saveReminder_showToastMessage() {
+
         val scenario = ActivityScenario.launch(RemindersActivity::class.java)
         binding.monitorActivity(scenario)
-
         onView(withId(R.id.addReminderFAB)).perform(click())
         onView(withId(R.id.reminderTitle)).perform(typeText("Title"))
         closeSoftKeyboard()
         onView(withId(R.id.reminderDescription)).perform(typeText("Description"))
         closeSoftKeyboard()
-
         onView(withId(R.id.selectedLocation)).perform(click())
         onView(withId(R.id.mapLocation)).perform(longClick())
         onView(withId(R.id.btn_save)).perform(click())
-
         onView(withId(R.id.saveReminder)).perform(click())
-
         onView(withText(R.string.reminder_saved)).inRoot(withDecorView(not(`is`(getActivity(scenario).window.decorView))))
             .check(matches(isDisplayed()))
 

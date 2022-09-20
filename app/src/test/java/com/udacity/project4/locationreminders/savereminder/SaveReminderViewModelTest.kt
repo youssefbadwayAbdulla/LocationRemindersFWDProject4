@@ -143,20 +143,5 @@ class SaveReminderViewModelTest {
 
     }
 
-    @Test
-    fun shouldReturnError() {
-        fakeLocalDataSourceForTesting = FakeDataSource(null)
-        saveRemindersViewModelTest = SaveReminderViewModel(
-            ApplicationProvider.getApplicationContext(),
-            fakeLocalDataSourceForTesting
-        )
-        fakeLocalDataSourceForTesting.setReturnError(true)
-        saveRemindersViewModelTest.saveReminder(reminderDTO)
-        assertThat(
-            saveRemindersViewModelTest.showSnackBar.getOrAwaitValue(),
-            Is.`is`("Location reminder information not Saved")
-        )
-    }
-
 
 }
