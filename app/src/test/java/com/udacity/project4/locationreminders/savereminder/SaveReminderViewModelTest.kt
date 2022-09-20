@@ -2,146 +2,111 @@ package com.udacity.project4.locationreminders.savereminder
 
 import android.os.Build
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.test.core.app.ApplicationProvider
+import androidx.test.core.app.ApplicationProvider.getApplicationContext
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.android.architecture.blueprints.todoapp.getOrAwaitValue
+import com.udacity.project4.MainCoroutineRule
 import com.udacity.project4.locationreminders.data.FakeDataSource
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
-import com.udacity.project4.locationreminders.reminderslist.RemindersListViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.runBlocking
 import org.hamcrest.CoreMatchers
 import org.hamcrest.CoreMatchers.`is`
-import org.hamcrest.MatcherAssert
+import org.hamcrest.CoreMatchers.notNullValue
 import org.hamcrest.MatcherAssert.assertThat
-import org.hamcrest.core.Is
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.koin.core.context.stopKoin
 import org.robolectric.annotation.Config
 
-@RunWith(AndroidJUnit4::class)
+
+@Config(maxSdk = Build.VERSION_CODES.P)
 @ExperimentalCoroutinesApi
-@Config(sdk = [Build.VERSION_CODES.O_MR1])
+@RunWith(AndroidJUnit4::class)
 class SaveReminderViewModelTest {
+
     @get:Rule
-    var instantExecutorRuleTest = InstantTaskExecutorRule()
+    val instantTaskExecutorRuleTest = InstantTaskExecutorRule()
+
+    @get:Rule
+    val mainCoroutineRuleTest = MainCoroutineRule()
+
     private lateinit var fakeLocalDataSourceForTesting: FakeDataSource
     private lateinit var saveRemindersViewModelTest: SaveReminderViewModel
-    private lateinit var reminderDTO: ReminderDataItem
 
     @Before
     fun setup() {
+        stopKoin()
+
         fakeLocalDataSourceForTesting = FakeDataSource()
-        saveRemindersViewModelTest =
-            SaveReminderViewModel(
-                ApplicationProvider.getApplicationContext(),
-                fakeLocalDataSourceForTesting
-            )
+        saveRemindersViewModelTest = SaveReminderViewModel(
+            getApplicationContext(),
+            fakeLocalDataSourceForTesting
+        )
+        runBlocking{ fakeLocalDataSourceForTesting.deleteAllReminders()}
 
     }
 
+    private fun getReminderAndSaveLocation(): ReminderDataItem {
+        return ReminderDataItem(
+            title = "title",
+            description = "desc",
+            location = "loc",
+            latitude = 47.5456551,
+            longitude = 122.0101731)
+    }
     @Test
     fun saveRemindersLocation() {
-        reminderDTO = ReminderDataItem(
-            title = "saveReminders",
-            description = "descriptionReminders",
-            location = "locationReminders",
-            latitude = 30.043457431,
-            longitude = 31.2765762
-        )
-        saveRemindersViewModelTest.saveReminder(reminderDTO)
-        assertThat(
-            saveRemindersViewModelTest.showToast.getOrAwaitValue(),
-            Is.`is`("Reminder Saved !")
-        )
-
+        val reminderDataItem = getReminderAndSaveLocation()
+        saveRemindersViewModelTest.saveReminder(reminderDataItem)
+        assertThat(saveRemindersViewModelTest.showToast.getOrAwaitValue(), `is`("Reminder Saved !"))
     }
 
     @Test
-    fun saveRemindersLocation_withoutTitle() {
-        val reminderDTO = ReminderDataItem(
+    fun `saveRemindersLocation_withoutTitle()`() {
+
+        val reminderDataItem = ReminderDataItem(
             title = "",
-            description = "descriptionReminders",
-            location = "locationReminders",
-            latitude = 30.043457431,
-            longitude = 31.2765762
-        )
-        saveRemindersViewModelTest.saveReminder(reminderDTO)
-        assertThat(
-            saveRemindersViewModelTest.showToast.getOrAwaitValue(),
-            CoreMatchers.notNullValue()
-        )
+            description = "desc",
+            location = "loc",
+            latitude = 47.5456551,
+            longitude = 122.0101731)
+
+        saveRemindersViewModelTest.validateAndSaveReminder(reminderDataItem)
+        assertThat(saveRemindersViewModelTest.showSnackBarInt.getOrAwaitValue(), notNullValue())
 
     }
 
     @Test
-    fun saveRemindersLocation_withoutDescription() {
-        val reminderDTO = ReminderDataItem(
-            title = "saveReminders",
-            description = "",
-            location = "locationReminders",
-            latitude = 30.043457431,
-            longitude = 31.2765762
-        )
-        saveRemindersViewModelTest.saveReminder(reminderDTO)
-        assertThat(
-            saveRemindersViewModelTest.showToast.getOrAwaitValue(),
-            CoreMatchers.notNullValue()
-        )
+    fun loadSaveReminders_and_showLocationLoading() = runBlocking {
+
+        val reminderDataItem = getReminderAndSaveLocation()
+
+        mainCoroutineRuleTest.pauseDispatcher()
+        saveRemindersViewModelTest.validateAndSaveReminder(reminderDataItem)
+        assertThat(saveRemindersViewModelTest.showLoading.getOrAwaitValue(), CoreMatchers.`is`(true))
+
+        mainCoroutineRuleTest.resumeDispatcher()
+        assertThat(saveRemindersViewModelTest.showLoading.getOrAwaitValue(), CoreMatchers.`is`(false))
+
 
     }
 
+
     @Test
-    fun saveRemindersLocation_withoutLocation() {
-        val reminderDTO = ReminderDataItem(
-            title = "saveReminders",
-            description = "descriptionReminders",
+    fun loadSaveReminders_and_showWithoutLocationLoading() {
+
+        val reminderDataItem = ReminderDataItem(
+            title = "hey",
+            description = "hey",
             location = "",
-            latitude = 30.043457431,
-            longitude = 31.2765762
-        )
-        saveRemindersViewModelTest.saveReminder(reminderDTO)
-        assertThat(
-            saveRemindersViewModelTest.showToast.getOrAwaitValue(),
-            CoreMatchers.notNullValue()
-        )
+            latitude = 47.5456551,
+            longitude = 122.0101731)
+
+        saveRemindersViewModelTest.validateAndSaveReminder(reminderDataItem)
+        assertThat(saveRemindersViewModelTest.showSnackBarInt.getOrAwaitValue(), notNullValue())
 
     }
-
-    @Test
-    fun saveRemindersLocation_withoutTitle_and_Description_and_Location() {
-        val reminderDTO = ReminderDataItem(
-            title = "",
-            description = "",
-            location = "",
-            latitude = 30.043457431,
-            longitude = 31.2765762
-        )
-        saveRemindersViewModelTest.saveReminder(reminderDTO)
-        assertThat(
-            saveRemindersViewModelTest.showToast.getOrAwaitValue(),
-            CoreMatchers.notNullValue()
-        )
-
-    }
-
-    @Test
-    fun loadSaveReminders_and_showLocationLoading() = runBlockingTest {
-        reminderDTO = ReminderDataItem(
-            title = "saveReminders",
-            description = "descriptionReminders",
-            location = "locationReminders",
-            latitude = 30.043457431,
-            longitude = 31.2765762
-        )
-        saveRemindersViewModelTest.validateAndSaveReminder(reminderDTO)
-
-        assertThat(saveRemindersViewModelTest.showLoading.getOrAwaitValue(), `is`(false))
-
-
-    }
-
-
 }
