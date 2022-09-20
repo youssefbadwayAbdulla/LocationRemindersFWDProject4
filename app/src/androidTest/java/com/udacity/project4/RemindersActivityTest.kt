@@ -5,6 +5,7 @@ import android.app.Application
 import androidx.lifecycle.Transformations.map
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider.getApplicationContext
+import androidx.test.espresso.Espresso
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.action.ViewActions.*
@@ -25,8 +26,7 @@ import com.udacity.project4.util.monitorActivity
 import com.udacity.project4.utils.EspressoIdlingResource
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
-import org.hamcrest.CoreMatchers.`is`
-import org.hamcrest.CoreMatchers.not
+import org.hamcrest.CoreMatchers.*
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -134,22 +134,26 @@ class RemindersActivityTest :
     }
 
 
+
     @Test
-    fun saveReminderAnd_checkSnackBar() {
+    fun saveReminderAnd_checkSnackBar() = runBlockingTest {
         val activityScenario = ActivityScenario.launch(RemindersActivity::class.java)
-        onView(withId(R.id.noDataTextView))
-            .check(matches(isDisplayed()))
+        binding.monitorActivity(activityScenario)
+
         onView(withId(R.id.addReminderFAB)).perform(click())
+
+        onView(withId(R.id.reminderTitle)).perform(typeText("Title"))
+        Espresso.closeSoftKeyboard()
         onView(withId(R.id.saveReminder)).perform(click())
-        onView(withId(R.id.snackbar_text))
-            .check(matches(withText(R.string.err_enter_title)))
-        Thread.sleep(4000)
-        onView(withId(R.id.reminderTitle)).perform(replaceText("new title"))
-        onView(withId(R.id.saveReminder)).perform(click())
-        onView(withId(R.id.snackbar_text))
-            .check(matches(withText(R.string.err_select_location)))
-        activityScenario.close()
+
+        onView(
+            allOf(
+                withId(com.google.android.material.R.id.snackbar_text),
+                withText(activity.getString(R.string.err_select_location))
+            )
+        ).check(matches(isDisplayed()))
     }
+
 
     private fun getActivity(activityScenario: ActivityScenario<RemindersActivity>): Activity? {
         var activity: Activity? = null
