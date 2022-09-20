@@ -102,8 +102,9 @@ class RemindersActivityTest :
         IdlingRegistry.getInstance().unregister(binding)
     }
 
+    //Toast testing only works on api 29 and below
     @Test
-    fun saveReminderScreen_showToastMessage() = runBlockingTest{
+    fun saveReminderScreen_showToastMessage() = runBlockingTest {
 
         val activityScenario = ActivityScenario.launch(RemindersActivity::class.java)
         binding.monitorActivity(activityScenario)
